@@ -25,7 +25,7 @@ SOFTWARE.
 #include <AD5674.h>
 #include <cmath>
 
-AD5674Class::AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin){
+AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin){
 	_SS_pin = SS_pin;
 	_LDAC_pin = LDAC_pin;
 	_RESET_pin = RESET_pin;
@@ -41,7 +41,7 @@ AD5674Class::AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin){
 	resetRegisters();
 }
 
-AD5674Class::AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin, float Vref){
+AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref){
 	_SS_pin = SS_pin;
 	_LDAC_pin = LDAC_pin;
 	_RESET_pin = RESET_pin;
@@ -59,7 +59,7 @@ AD5674Class::AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin, float Vref){
 	setReference(Vref);
 }
 
-void AD5674Class::setChannel(int channel, word value, bool DAC_update=0){
+void AD5674Class::setChannel(uint8_t channel, word value, bool DAC_update=0){
 
 	// Check if the channel is within the valid range
 	if(channel < 0 || channel > 15){
@@ -88,7 +88,7 @@ void AD5674Class::setChannel(int channel, word value, bool DAC_update=0){
 	writeData(command, address, value<<4);
 }
 
-void AD5674Class::setChannel(int channel, float value, bool DAC_update=0){
+void AD5674Class::setChannel(uint8_t channel, float value, bool DAC_update=0){
 
 	if(std::isnan(_Vref)){
 		Serial.println("Error: Reference voltage not set");
@@ -103,7 +103,7 @@ void AD5674Class::setChannel(int channel, float value, bool DAC_update=0){
 	setChannel(channel, static_cast<word>(value/_Vref * 4095), DAC_update);
 }
 
-void AD5674Class::updateChannels(int* channels, int num_channels){
+void AD5674Class::updateChannels(uint8_t* channels, int num_channels){
 
 	word data = 0;
 	for(int i = 0; i < num_channels; i++){
@@ -120,7 +120,7 @@ void AD5674Class::updateChannels(int* channels, int num_channels){
 	writeData(AD5674_CMD_UPDATE_DAC_REG, 0x00, data);
 }
 
-void AD5674Class::powerUpDown(int channel, bool power_up){
+void AD5674Class::powerUpDown(uint8_t channel, bool power_up){
 	// Check if the channel is within the valid range
 	if(channel < 0 || channel > 15){
 		Serial.println("Error: Channel out of range");
@@ -133,7 +133,7 @@ void AD5674Class::powerUpDown(int channel, bool power_up){
 	powerUpDown(channels, power_ups, 1);
 }
 
-void AD5674Class::powerUpDown(int* channels, bool* power_up, int num_channels){
+void AD5674Class::powerUpDown(uint8_t* channels, bool* power_up, int num_channels){
 	// Create flags to check if the status registers have been updated
 	bool update_0 = false;
 	bool update_1 = false;

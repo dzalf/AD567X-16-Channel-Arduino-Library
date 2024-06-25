@@ -47,22 +47,22 @@ SOFTWARE.
 class AD5674Class{
 	
 	public:
-	AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin);
-	AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin, float Vref);
-	void setChannel(int channel, word value, bool DAC_update);
-	void setChannel(int channel, float value, bool DAC_update);
+	AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
+	AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref);
+	void setChannel(uint8_t channel, word value, bool DAC_update);
+	void setChannel(uint8_t channel, float value, bool DAC_update);
 	void resetRegisters();
 	void updateDAC();
-	void updateChannels(int* channels, int num_channels);
-	void powerUpDown(int* channels, bool* power_up, int num_channels);
-	void powerUpDown(int channel, bool power_up);
+	void updateChannels(uint8_t* channels, int num_channels);
+	void powerUpDown(uint8_t* channels, bool* power_up, int num_channels);
+	void powerUpDown(uint8_t channel, bool power_up);
 	void setReference(bool internal);
 	void setReference(float Vref);
 
 	private:
-		int _SS_pin;
-		int _LDAC_pin;
-		int _RESET_pin;
+		pin_size_t _SS_pin;
+		pin_size_t _LDAC_pin;
+		pin_size_t _RESET_pin;
 		float _Vref = 2.5;
 
 		word _DAC_status_0 = 0x0000;
