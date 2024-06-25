@@ -23,6 +23,7 @@ SOFTWARE.
 #include <Arduino.h>
 #include <SPI.h>
 #include <AD5674.h>
+#include <cmath>
 
 AD5674Class::AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin){
 	_SS_pin = SS_pin;
@@ -40,7 +41,25 @@ AD5674Class::AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin){
 	resetRegisters();
 }
 
-void AD5674Class::setChannel(int channel, word value, bool DAC_update){
+AD5674Class::AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin, float Vref){
+	_SS_pin = SS_pin;
+	_LDAC_pin = LDAC_pin;
+	_RESET_pin = RESET_pin;
+	
+	pinMode(_SS_pin, OUTPUT);
+	pinMode(_LDAC_pin, OUTPUT);
+	pinMode(_RESET_pin, OUTPUT);
+	
+	digitalWrite(_SS_pin, HIGH);
+	digitalWrite(_LDAC_pin, HIGH);
+	digitalWrite(_RESET_pin, HIGH);
+
+	resetRegisters();
+
+	setReference(Vref);
+}
+
+void AD5674Class::setChannel(int channel, word value, bool DAC_update=0){
 
 	// Check if the channel is within the valid range
 	if(channel < 0 || channel > 15){
@@ -67,6 +86,21 @@ void AD5674Class::setChannel(int channel, word value, bool DAC_update){
 
 	// Send the 12-bit data to the DAC
 	writeData(command, address, value<<4);
+}
+
+void AD5674Class::setChannel(int channel, float value, bool DAC_update=0){
+
+	if(std::isnan(_Vref)){
+		Serial.println("Error: Reference voltage not set");
+		return;
+	}
+
+	if(value < 0 || value > _Vref){
+		Serial.println("Error: Value out of range");
+		return;
+	}
+
+	setChannel(channel, static_cast<word>(value/_Vref * 4095), DAC_update);
 }
 
 void AD5674Class::updateChannels(int* channels, int num_channels){
@@ -167,10 +201,18 @@ void AD5674Class::setReference(bool internal){
 	// Set the reference voltage to internal or external
 	if(internal){
 		writeData(AD5674_CMD_REF_SETUP, 0x00, AD5674_REF_INTERNAL_MESSAGE);
+		_Vref = 2.5;
 	}
 	else{
 		writeData(AD5674_CMD_REF_SETUP, 0x00, AD5674_REF_EXTERNAL_MESSAGE);
+		_Vref = std::numeric_limits<double>::quiet_NaN()
 	}
+}
+
+void AD5674Class::setReference(float Vref){
+	// Set the reference voltage to external and save the value
+	writeData(AD5674_CMD_REF_SETUP, 0x00, AD5674_REF_EXTERNAL_MESSAGE);
+	_Vref = Vref;
 }
 
 void AD5674Class::writeData(byte command, byte address, word data){

@@ -45,20 +45,25 @@ SOFTWARE.
 #define AD5674_REF_EXTERNAL_MESSAGE 0x0001
 
 class AD5674Class{
+	
 	public:
 	AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin);
+	AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin, float Vref);
 	void setChannel(int channel, word value, bool DAC_update);
+	void setChannel(int channel, float value, bool DAC_update);
 	void resetRegisters();
 	void updateDAC();
 	void updateChannels(int* channels, int num_channels);
 	void powerUpDown(int* channels, bool* power_up, int num_channels);
 	void powerUpDown(int channel, bool power_up);
 	void setReference(bool internal);
+	void setReference(float Vref);
 
 	private:
 		int _SS_pin;
 		int _LDAC_pin;
 		int _RESET_pin;
+		float _Vref = 2.5;
 
 		word _DAC_status_0 = 0x0000;
 		word _DAC_status_1 = 0x0000;
