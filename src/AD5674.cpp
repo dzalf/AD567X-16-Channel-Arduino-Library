@@ -15,7 +15,7 @@ AD5674Class::AD5674Class(int SS_pin, int LDAC_pin, int RESET_pin){
 	digitalWrite(_LDAC_pin, HIGH);
 	digitalWrite(_RESET_pin, HIGH);
 
-	this.resetRegisters();
+	resetRegisters();
 }
 
 void AD5674Class::setChannel(int channel, word value, bool DAC_update){
@@ -26,12 +26,13 @@ void AD5674Class::setChannel(int channel, word value, bool DAC_update){
 		return;
 	}
 	
+	byte command;
 	// Select the desired update mode
 	if(DAC_update){
-		byte command = AD5674_CMD_WRITE_DAC_REG;
+		command = AD5674_CMD_WRITE_DAC_REG;
 	}
 	else{
-		byte command = AD5674_CMD_WRITE_INPUT_REG;
+		command = AD5674_CMD_WRITE_INPUT_REG;
 	}
 
 	// If the value is greater than 12 bits, warn the user about data loss
@@ -43,7 +44,7 @@ void AD5674Class::setChannel(int channel, word value, bool DAC_update){
 	byte address = static_cast<byte>(channel) & 0x0F;
 
 	// Send the 12-bit data to the DAC
-	this.writeData(command, address, value<<4);
+	writeData(command, address, value<<4);
 }
 
 void AD5674Class::updateChannels(int* channels, int num_channels){
@@ -60,7 +61,7 @@ void AD5674Class::updateChannels(int* channels, int num_channels){
 	}
 
 	// Send the data to the DAC
-	this.writeData(AD5674_CMD_UPDATE_DAC_REG, 0x00, data);
+	writeData(AD5674_CMD_UPDATE_DAC_REG, 0x00, data);
 }
 
 void AD5674Class::powerUpDown(int channel, bool power_up){
@@ -73,7 +74,7 @@ void AD5674Class::powerUpDown(int channel, bool power_up){
 	// Call the overloaded function
 	int channels[1] = {channel};
 	bool power_ups[1] = {power_up};
-	this.powerUpDown(channels, power_ups, 1);
+	powerUpDown(channels, power_ups, 1);
 }
 
 void AD5674Class::powerUpDown(int* channels, bool* power_up, int num_channels){
@@ -100,7 +101,7 @@ void AD5674Class::powerUpDown(int* channels, bool* power_up, int num_channels){
 			else{
 				power_status &= ~(1 << 2*channels[i]);
 			}
-			_DAC_STATUS_1 = power_status; // Update the status register
+			_DAC_status_1 = power_status; // Update the status register
 		}
 		else{
 			update_0 = true;
@@ -112,17 +113,17 @@ void AD5674Class::powerUpDown(int* channels, bool* power_up, int num_channels){
 			else{
 				power_status &= ~(1 << 2*channels[i]);
 			}
-			_DAC_STATUS_0 = power_status; // Update the status register
+			_DAC_status_0 = power_status; // Update the status register
 		}
 		
 	}
 
 	// If the status registers have been updated, send the new data to the DAC
 	if(update_0){
-		this.writeData(AD5674_CMD_POWER_UPDOWN, AD5674_POWER_BATCH_0, _DAC_status_0);
+		writeData(AD5674_CMD_POWER_UPDOWN, AD5674_POWER_BATCH_0, _DAC_status_0);
 	}
 	if(update_1){
-		this.writeData(AD5674_CMD_POWER_UPDOWN, AD5674_POWER_BATCH_1, _DAC_status_1);
+		writeData(AD5674_CMD_POWER_UPDOWN, AD5674_POWER_BATCH_1, _DAC_status_1);
 	}
 }
 
@@ -143,10 +144,10 @@ void AD5674Class::updateDAC(){
 void AD5674Class::setReference(bool internal){
 	// Set the reference voltage to internal or external
 	if(internal){
-		this.writeData(AD5674_CMD_REF_SETUP, 0x00, AD5674_REF_INTERNAL_MESSAGE);
+		writeData(AD5674_CMD_REF_SETUP, 0x00, AD5674_REF_INTERNAL_MESSAGE);
 	}
 	else{
-		this.writeData(AD5674_CMD_REF_SETUP, 0x00, AD5674_REF_EXTERNAL_MESSAGE);
+		writeData(AD5674_CMD_REF_SETUP, 0x00, AD5674_REF_EXTERNAL_MESSAGE);
 	}
 }
 
@@ -157,7 +158,7 @@ void AD5674Class::writeData(byte command, byte address, word data){
 	SPI.setBitOrder(MSBFIRST);
 
 	// Start SPI by selecting the slave
-	digitalWrite(SS_pin, LOW);
+	digitalWrite(_SS_pin, LOW);
 
 	// Send the command and address (4 bits each)
 	SPI.transfer((command << 4) | address);
@@ -167,7 +168,7 @@ void AD5674Class::writeData(byte command, byte address, word data){
 	SPI.transfer(lowByte(data));
 
 	// End SPI by deselecting the slave
-	digitalWrite(SS_pin, HIGH);
+	digitalWrite(_SS_pin, HIGH);
 }
 
 /*
