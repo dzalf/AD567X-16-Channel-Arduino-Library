@@ -1,0 +1,24 @@
+{
+	"name": "AD567X Arduino Library",
+	"version": "0.1",
+	"description": "This is a an Arduino library to use the Analog Devices AD567X Digital-to-Analog Converters with SPI.",
+	"keywords": "AD5674, AD5679",
+	"repository":
+	{
+	  "type": "git",
+	  "url": "https://github.com/LorisMendolia/AD567X-Arduino-Library"
+	},
+	"authors":
+	[
+	  {
+		"name": "Loris Mendolia",
+		"email": "lmendolia@uliege.be",
+		"url": "https://linkedin.com/in/lorismendolia/",
+		"maintainer": true
+	  }
+	],
+	"license": "MIT",
+	"homepage": "https://github.com/LorisMendolia/AD567X-Arduino-Library",
+	"frameworks": "*",
+	"platforms": "atmega4809"
+  }
