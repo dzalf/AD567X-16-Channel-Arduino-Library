@@ -152,10 +152,10 @@ void AD5674Class::powerUpDown(int* channels, bool* power_up, int num_channels){
 			channel %= 8; // Get the channel number within the second batch
 			// Set or clear the corresponding bit in the status register
 			if(!power_up[i]){
-				power_status |= (1 << 2*channels[i]);
+				power_status |= (1 << 2*channel);
 			}
 			else{
-				power_status &= ~(1 << 2*channels[i]);
+				power_status &= ~(1 << 2*channel);
 			}
 			_DAC_status_1 = power_status; // Update the status register
 		}
@@ -164,10 +164,10 @@ void AD5674Class::powerUpDown(int* channels, bool* power_up, int num_channels){
 			word power_status = _DAC_status_0;
 			// Set or clear the corresponding bit in the status register
 			if(!power_up[i]){
-				power_status |= (1 << 2*channels[i]);
+				power_status |= (1 << 2*channel);
 			}
 			else{
-				power_status &= ~(1 << 2*channels[i]);
+				power_status &= ~(1 << 2*channel);
 			}
 			_DAC_status_0 = power_status; // Update the status register
 		}
