@@ -205,7 +205,7 @@ void AD5674Class::setReference(bool internal){
 	}
 	else{
 		writeData(AD5674_CMD_REF_SETUP, 0x00, AD5674_REF_EXTERNAL_MESSAGE);
-		_Vref = NAN
+		_Vref = NAN;
 	}
 }
 
