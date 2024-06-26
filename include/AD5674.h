@@ -23,7 +23,7 @@ SOFTWARE.
 #ifndef AD5674_h
 #define AD5674_h
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <SPI.h>
 
 #define AD5674_CMD_WRITE_INPUT_REG B0001 // Write to Input Register n
