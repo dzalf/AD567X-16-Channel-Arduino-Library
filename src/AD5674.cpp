@@ -59,7 +59,7 @@ AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESE
 	setReference(Vref);
 }
 
-void AD5674Class::setChannel(uint8_t channel, word value, bool DAC_update=0){
+void AD5674Class::setChannel(uint8_t channel, word value, bool DAC_update){
 
 	// Check if the channel is within the valid range
 	if(channel < 0 || channel > 15){
@@ -88,7 +88,7 @@ void AD5674Class::setChannel(uint8_t channel, word value, bool DAC_update=0){
 	writeData(command, address, value<<4);
 }
 
-void AD5674Class::setChannel(uint8_t channel, float value, bool DAC_update=0){
+void AD5674Class::setChannel(uint8_t channel, float value, bool DAC_update){
 
 	if(isnan(_Vref)){
 		Serial.println("Error: Reference voltage not set");

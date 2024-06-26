@@ -49,8 +49,8 @@ class AD5674Class{
 	public:
 	AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
 	AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref);
-	void setChannel(uint8_t channel, word value, bool DAC_update);
-	void setChannel(uint8_t channel, float value, bool DAC_update);
+	void setChannel(uint8_t channel, word value, bool DAC_update=0);
+	void setChannel(uint8_t channel, float value, bool DAC_update=0);
 	void resetRegisters();
 	void updateDAC();
 	void updateChannels(uint8_t* channels, int num_channels);
