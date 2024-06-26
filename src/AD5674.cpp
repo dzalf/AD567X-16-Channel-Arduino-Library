@@ -128,7 +128,7 @@ void AD5674Class::powerUpDown(uint8_t channel, bool power_up){
 	}
 
 	// Call the overloaded function
-	int channels[1] = {channel};
+	uint8_t channels[1] = {channel};
 	bool power_ups[1] = {power_up};
 	powerUpDown(channels, power_ups, 1);
 }
