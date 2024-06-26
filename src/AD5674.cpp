@@ -23,7 +23,7 @@ SOFTWARE.
 #include <Arduino.h>
 #include <SPI.h>
 #include <AD5674.h>
-#include <cmath>
+#include <math.h>
 
 AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin){
 	_SS_pin = SS_pin;
@@ -90,7 +90,7 @@ void AD5674Class::setChannel(uint8_t channel, word value, bool DAC_update=0){
 
 void AD5674Class::setChannel(uint8_t channel, float value, bool DAC_update=0){
 
-	if(std::isnan(_Vref)){
+	if(isnan(_Vref)){
 		Serial.println("Error: Reference voltage not set");
 		return;
 	}
@@ -205,7 +205,7 @@ void AD5674Class::setReference(bool internal){
 	}
 	else{
 		writeData(AD5674_CMD_REF_SETUP, 0x00, AD5674_REF_EXTERNAL_MESSAGE);
-		_Vref = std::numeric_limits<double>::quiet_NaN()
+		_Vref = NAN
 	}
 }
 
