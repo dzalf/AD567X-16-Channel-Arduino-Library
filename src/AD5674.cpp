@@ -222,6 +222,7 @@ void AD5674Class::writeData(byte command, byte address, word data){
 	SPI.setBitOrder(MSBFIRST);
 
 	// Start SPI by selecting the slave
+	SPI.begin();
 	digitalWrite(_SS_pin, LOW);
 
 	// Send the command and address (4 bits each)
@@ -233,6 +234,7 @@ void AD5674Class::writeData(byte command, byte address, word data){
 
 	// End SPI by deselecting the slave
 	digitalWrite(_SS_pin, HIGH);
+	SPI.end();
 }
 
 /*
