@@ -1,6 +1,6 @@
 {
 	"name": "AD567X Arduino Library",
-	"version": "0.3",
+	"version": "0.7",
 	"description": "This is a an Arduino library to use the Analog Devices AD567X Digital-to-Analog Converters with SPI.",
 	"keywords": "AD5674, AD5679",
 	"repository":

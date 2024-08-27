@@ -33,6 +33,10 @@ AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESE
 	pinMode(_SS_pin, OUTPUT);
 	pinMode(_LDAC_pin, OUTPUT);
 	pinMode(_RESET_pin, OUTPUT);
+
+	// SPI settings
+	SPI.setDataMode(SPI_MODE1);
+	SPI.setBitOrder(MSBFIRST);
 	
 	digitalWrite(_SS_pin, HIGH);
 	digitalWrite(_LDAC_pin, HIGH);
@@ -49,6 +53,10 @@ AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESE
 	pinMode(_SS_pin, OUTPUT);
 	pinMode(_LDAC_pin, OUTPUT);
 	pinMode(_RESET_pin, OUTPUT);
+
+	// SPI settings
+	SPI.setDataMode(SPI_MODE1);
+	SPI.setBitOrder(MSBFIRST);
 	
 	digitalWrite(_SS_pin, HIGH);
 	digitalWrite(_LDAC_pin, HIGH);
@@ -59,11 +67,13 @@ AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESE
 	setReference(Vref);
 }
 
-void AD5674Class::setChannel(uint8_t channel, word value, bool DAC_update){
+void AD5674Class::setChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
 
 	// Check if the channel is within the valid range
 	if(channel < 0 || channel > 15){
-		Serial.println("Error: Channel out of range");
+		if(verbose){
+			Serial.println("Error: Channel out of range");
+		}
 		return;
 	}
 	
@@ -77,7 +87,7 @@ void AD5674Class::setChannel(uint8_t channel, word value, bool DAC_update){
 	}
 
 	// If the value is greater than 12 bits, warn the user about data loss
-	if(!(value & 0xF000)){
+	if(verbose && !(value & 0xF000)){
 		Serial.println("Warning: Data loss, value is greater than 12 bits");
 	}
 
@@ -85,22 +95,26 @@ void AD5674Class::setChannel(uint8_t channel, word value, bool DAC_update){
 	byte address = static_cast<byte>(channel) & 0x0F;
 
 	// Send the 12-bit data to the DAC
-	writeData(command, address, value<<4);
+	writeData(command, channel, value<<4);
 }
 
-void AD5674Class::setChannel(uint8_t channel, float value, bool DAC_update){
+void AD5674Class::setChannel(uint8_t channel, float value, bool DAC_update, bool verbose){
 
 	if(isnan(_Vref)){
-		Serial.println("Error: Reference voltage not set");
+		if(verbose){
+			Serial.println("Error: Reference voltage not set");
+		}
 		return;
 	}
 
 	if(value < 0 || value > _Vref){
-		Serial.println("Error: Value out of range");
+		if(verbose){
+			Serial.println("Error: Value out of range");
+		}
 		return;
 	}
 
-	setChannel(channel, static_cast<word>(value/_Vref * 4095), DAC_update);
+	setChannel(channel, static_cast<word>(value/_Vref * 4095), DAC_update, verbose);
 }
 
 void AD5674Class::updateChannels(uint8_t* channels, int num_channels){
@@ -183,17 +197,21 @@ void AD5674Class::powerUpDown(uint8_t* channels, bool* power_up, int num_channel
 	}
 }
 
-void AD5674Class::resetRegisters(){
+void AD5674Class::resetRegisters(unsigned long delay_ms){
 	// Pulse the RESET pin
 	digitalWrite(_RESET_pin, LOW);
-	delay(1);
+	if(delay_ms){
+		delay(delay_ms);
+	}
 	digitalWrite(_RESET_pin, HIGH);
 }
 
-void AD5674Class::updateDAC(){
+void AD5674Class::updateDAC(unsigned long delay_ms){
 	// Pulse the LDAC pin
 	digitalWrite(_LDAC_pin, LOW);
-	delay(1);
+	if(delay_ms){
+		delay(delay_ms);
+	}
 	digitalWrite(_LDAC_pin, HIGH);
 }
 
@@ -216,10 +234,6 @@ void AD5674Class::setReference(float Vref){
 }
 
 void AD5674Class::writeData(byte command, byte address, word data){
-
-	// SPI settings
-	SPI.setDataMode(SPI_MODE1);
-	SPI.setBitOrder(MSBFIRST);
 
 	// Start SPI by selecting the slave
 	SPI.begin();
