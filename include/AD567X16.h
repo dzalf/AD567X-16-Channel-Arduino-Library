@@ -92,6 +92,24 @@ class AD5674Class : public AD5674RClass{
 	using AD567X16Class::setReference;
 };
 
+class AD5679RClass : public AD567X16Class{
+
+	public:
+	AD5679RClass(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
+
+	void setChannel(uint8_t channel, word value, bool DAC_update=0, bool verbose=0) override;
+	void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0) override;
+};
+
+class AD5679Class : public AD5679RClass{
+
+	public:
+	AD5679Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
+	AD5679Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref);
+
+	using AD567X16Class::setReference;
+};
+
 #endif
 
 /*

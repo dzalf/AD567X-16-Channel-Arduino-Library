@@ -50,6 +50,11 @@ AD5674RClass::AD5674RClass(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RE
 AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5674RClass(SS_pin, LDAC_pin, RESET_pin) {}
 AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5674RClass(SS_pin, LDAC_pin, RESET_pin) {setReference(Vref);}
 
+AD5679RClass::AD5679RClass(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(SS_pin, LDAC_pin, RESET_pin) {}
+
+AD5679Class::AD5679Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5679RClass(SS_pin, LDAC_pin, RESET_pin) {}
+AD5679Class::AD5679Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5679RClass(SS_pin, LDAC_pin, RESET_pin) {setReference(Vref);}
+
 void AD567X16Class::pushChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
 
 	// Check if the channel is within the valid range
@@ -83,6 +88,12 @@ void AD5674RClass::setChannel(uint8_t channel, word value, bool DAC_update, bool
 	pushChannel(channel, value<<4, DAC_update, verbose);
 }
 
+void AD5679RClass::setChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
+
+	// Send the 16-bit data to the DAC
+	pushChannel(channel, value, DAC_update, verbose);
+}
+
 void AD5674RClass::setChannel(uint8_t channel, float value, bool DAC_update, bool verbose){
 
 	if(isnan(_Vref)){
@@ -100,6 +111,25 @@ void AD5674RClass::setChannel(uint8_t channel, float value, bool DAC_update, boo
 	}
 
 	setChannel(channel, static_cast<word>(value/_Vref * 4095), DAC_update, verbose);
+}
+
+void AD5679RClass::setChannel(uint8_t channel, float value, bool DAC_update, bool verbose){
+
+	if(isnan(_Vref)){
+		if(verbose){
+			Serial.println("Error: Reference voltage not set");
+		}
+		return;
+	}
+
+	if(value < 0 || value > _Vref){
+		if(verbose){
+			Serial.println("Error: Value out of range");
+		}
+		return;
+	}
+
+	setChannel(channel, static_cast<word>(value/_Vref * 65535), DAC_update, verbose);
 }
 
 void AD567X16Class::updateChannels(uint8_t* channels, int num_channels){

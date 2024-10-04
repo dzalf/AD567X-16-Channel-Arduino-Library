@@ -3,6 +3,11 @@ An [Arduino](http://arduino.cc) library to use the Analog Devices [AD567X](https
 
 ## Supported models
 - AD5674
+- AD5674R
+- AD5679
+- AD5679R
+
+### This library was only tested on the AD5674, use at your own risk on other models.
 
 Copyright (c) 2024 Loris Mendolia
 

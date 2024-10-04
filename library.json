@@ -1,8 +1,8 @@
 {
 	"name": "AD567X-16 Arduino Library",
-	"version": "0.7",
+	"version": "0.9",
 	"description": "This is a an Arduino library to use the Analog Devices AD567X 16-channel Digital-to-Analog Converters with SPI.",
-	"keywords": "AD5674, AD5679",
+	"keywords": "AD5674, AD5679, AD5674R, AD5679R",
 	"repository":
 	{
 	  "type": "git",
