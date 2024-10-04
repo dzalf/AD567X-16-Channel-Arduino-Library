@@ -45,29 +45,12 @@ AD567X16Class::AD567X16Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t 
 	resetRegisters();
 }
 
-AD567X16Class::AD567X16Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref){
-	_SS_pin = SS_pin;
-	_LDAC_pin = LDAC_pin;
-	_RESET_pin = RESET_pin;
-	
-	pinMode(_SS_pin, OUTPUT);
-	pinMode(_LDAC_pin, OUTPUT);
-	pinMode(_RESET_pin, OUTPUT);
+AD5674RClass::AD5674RClass(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(SS_pin, LDAC_pin, RESET_pin) {}
 
-	// SPI settings
-	SPI.setDataMode(SPI_MODE1);
-	SPI.setBitOrder(MSBFIRST);
-	
-	digitalWrite(_SS_pin, HIGH);
-	digitalWrite(_LDAC_pin, HIGH);
-	digitalWrite(_RESET_pin, HIGH);
+AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5674RClass(SS_pin, LDAC_pin, RESET_pin) {}
+AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5674RClass(SS_pin, LDAC_pin, RESET_pin) {setReference(Vref);}
 
-	resetRegisters();
-
-	setReference(Vref);
-}
-
-void AD567X16Class::setChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
+void AD567X16Class::pushChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
 
 	// Check if the channel is within the valid range
 	if(channel < 0 || channel > 15){
@@ -76,7 +59,7 @@ void AD567X16Class::setChannel(uint8_t channel, word value, bool DAC_update, boo
 		}
 		return;
 	}
-	
+
 	byte command;
 	// Select the desired update mode
 	if(DAC_update){
@@ -86,19 +69,21 @@ void AD567X16Class::setChannel(uint8_t channel, word value, bool DAC_update, boo
 		command = AD567X16_CMD_WRITE_INPUT_REG;
 	}
 
+	writeData(command, channel, value);
+}
+
+void AD5674RClass::setChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
+
 	// If the value is greater than 12 bits, warn the user about data loss
 	if(verbose && !(value & 0xF000)){
 		Serial.println("Warning: Data loss, value is greater than 12 bits");
 	}
 
-	// Extract the 4-bit address from the channel
-	byte address = static_cast<byte>(channel) & 0x0F;
-
 	// Send the 12-bit data to the DAC
-	writeData(command, channel, value<<4);
+	pushChannel(channel, value<<4, DAC_update, verbose);
 }
 
-void AD567X16Class::setChannel(uint8_t channel, float value, bool DAC_update, bool verbose){
+void AD5674RClass::setChannel(uint8_t channel, float value, bool DAC_update, bool verbose){
 
 	if(isnan(_Vref)){
 		if(verbose){
