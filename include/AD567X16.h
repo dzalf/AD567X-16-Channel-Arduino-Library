@@ -20,35 +20,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef AD5674_h
-#define AD5674_h
+#ifndef AD567X16_h
+#define AD567X16_h
 
 #include <Arduino.h>
 #include <SPI.h>
 
-#define AD5674_CMD_WRITE_INPUT_REG B0001 // Write to Input Register n
-#define AD5674_CMD_UPDATE_DAC_REG B0010 // Update DAC Register n with Input Register n
-#define AD5674_CMD_WRITE_DAC_REG B0011 // Write to DAC Register n
-#define AD5674_CMD_POWER_UPDOWN B0100 // Power up/down DAC Register n
-#define AD5674_CMD_LDAC_MASK_REG B0101 // Set LDAC Mask Register
-#define AD5674_CMD_RESET B0110 // Software Reset
-#define AD5674_CMD_REF_SETUP B0111 // Reference Setup
-#define AD5674_CMD_DAISY_CHAIN B1000 // Daisy-Chain Setup
-#define AD5674_CMD_READBACK B1001 // Set Readback DAC Register
-#define AD5674_CMD_WRITE_ALL_INPUT B1010 // Write to All Input Registers
-#define AD5674_CMD_WRITE_ALL_DAC B1011 // Write to All Input and DAC Registers
+#define AD567X16_CMD_WRITE_INPUT_REG B0001 // Write to Input Register n
+#define AD567X16_CMD_UPDATE_DAC_REG B0010 // Update DAC Register n with Input Register n
+#define AD567X16_CMD_WRITE_DAC_REG B0011 // Write to DAC Register n
+#define AD567X16_CMD_POWER_UPDOWN B0100 // Power up/down DAC Register n
+#define AD567X16_CMD_LDAC_MASK_REG B0101 // Set LDAC Mask Register
+#define AD567X16_CMD_RESET B0110 // Software Reset
+#define AD567X16_CMD_REF_SETUP B0111 // Reference Setup
+#define AD567X16_CMD_DAISY_CHAIN B1000 // Daisy-Chain Setup
+#define AD567X16_CMD_READBACK B1001 // Set Readback DAC Register
+#define AD567X16_CMD_WRITE_ALL_INPUT B1010 // Write to All Input Registers
+#define AD567X16_CMD_WRITE_ALL_DAC B1011 // Write to All Input and DAC Registers
 
-#define AD5674_POWER_BATCH_0 B0000 // First 8 DAC channels for power operation
-#define AD5674_POWER_BATCH_1 B1000 // Last 8 DAC channels for power operation
+#define AD567X16_POWER_BATCH_0 B0000 // First 8 DAC channels for power operation
+#define AD567X16_POWER_BATCH_1 B1000 // Last 8 DAC channels for power operation
 
-#define AD5674_REF_INTERNAL_MESSAGE 0x0000
-#define AD5674_REF_EXTERNAL_MESSAGE 0x0001
+#define AD567X16_REF_INTERNAL_MESSAGE 0x0000
+#define AD567X16_REF_EXTERNAL_MESSAGE 0x0001
 
-class AD5674Class{
+class AD567X16Class{
 	
 	public:
-	AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
-	AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref);
+	AD567X16Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
+	AD567X16Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref);
 	void setChannel(uint8_t channel, word value, bool DAC_update=0, bool verbose=0);
 	void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0);
 	void resetRegisters(unsigned long delay_ms=0);
