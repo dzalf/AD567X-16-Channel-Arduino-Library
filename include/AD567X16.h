@@ -41,8 +41,8 @@ SOFTWARE.
 #define AD567X16_POWER_BATCH_0 B0000 // First 8 DAC channels for power operation
 #define AD567X16_POWER_BATCH_1 B1000 // Last 8 DAC channels for power operation
 
-#define AD567X16_REF_INTERNAL_MESSAGE 0x0000
-#define AD567X16_REF_EXTERNAL_MESSAGE 0x0001
+#define AD567X16_REF_INTERNAL_MESSAGE 0x0000 // Set internal reference
+#define AD567X16_REF_EXTERNAL_MESSAGE 0x0001 // Set external reference
 
 class AD567X16Class{
 	
