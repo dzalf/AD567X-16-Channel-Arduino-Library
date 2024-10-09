@@ -18,7 +18,7 @@ The simplest way to use this library is with [PlatformIO](https://platformio.org
 
 ### Importing
 To use in an Arduino sketch, include the library header.
-```
+```Arduino
 #include <AD567X16.h>
 ```
 
@@ -28,7 +28,7 @@ The library defines a class for each AD567X 16-channel model. All classes share 
 For models with an external reference pin (non-R models), the value of the external reference can optionally be given to the constructor, enabling the library to handle the conversion of floating-point voltages when setting channel voltages.
 
 For example, instantiating and initializing the device class for the AD5674 is as simple as
-```
+```Arduino
 Dac = new AD5674Class(SS_DAC_PIN, LDAC_PIN, DAC_RESET_PIN, 1.8);
 ```
 where `SS_DAC_PIN`, `LDAC_PIN`, and `DAC_RESET_PIN` are the pin numbers used on the Arduino and 1.8 corresponds to a 1.8 V external reference.
@@ -41,23 +41,73 @@ The AD567X DACs use a buffered input structure, with separate input and DAC regi
 When using the internal reference, or when the external reference is specified for supported models, the `setChannel` function can be given a floating-point voltage as argument and handles the conversion to the appropriate sequence of bits. A 16-bit word can also be used to directly set the register content independently of the reference. For the 12-bit DAC models, the 4 least significant bits are ignored.
 
 For example, to set a 1.2 V voltage on the third channel by directly writing to the DAC registers, the function call would be
-```
+```Arduino
 Dac->setChannel(2, (float)1.2, true);
 ```
 To set the voltage of the first channel to half the reference by first writing to the input registers then updating the DAC registers, one would use
-```
+```Arduino
 Dac->setChannel(0, (word)0x7FFF);
 Dac->updateDAC();
 ```
 
 ## Library functions
-Todo
+### Constructors
+- ```Arduino
+  AD567X16Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin)
+  ```
+  Creates an object to control the DAC connected to the specified CS, LDAC, and RESET pins, and the SPI bus of the Arduino, initializes the DAC, and sets the correct pin and SPI parameters.
+
+  Implemented classes are
+  - AD5674RClass
+  - AD5674Class
+  - AD5679RClass
+  - AD5679Class
+
+- ```Arduino
+  AD567X16Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref)
+  ```
+  Identical to the previous constructor, but sets the DAC reference to external mode and stores the value of the reference used. Only for models that support external reference.
+
+  Implemented classes are
+  - AD5674Class
+  - AD5679Class
+ 
+### DAC operation functions
+- ```Arduino
+  void setChannel(uint8_t channel, word value, bool DAC_update=0, bool verbose=0);
+  void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0);
+  ```
+  Sets the value of the specified channel. `value` can be
+  - a 16-bit `word` (unsigned 16-bit integer, corresponding to an `unsigned int`), in which case the register bits will directly be set according to that value, or
+  - a `float` corresponding to the desired voltage, which will be converted into a `word` according to the value of the reference voltage (internal or external). This function will *fail* if the reference is set to external but the reference voltage has not been specified.
+For the 12-bit models (AD5674 and AD5674R), the 4 least significant bits will be ignored.
+ 
+The optional argument `DAC_update` indicates whether the DAC registers should be updated directly, or if the specified value should be put in the input registers (default).
+The optional argument `verbose` will print error or warning messages (when the exact float value cannot be achieved with the DAC resolution) on the SPI bus. This function is disabled by default as it makes the SPI bus very busy, which is undesirable for fast operation.
+
+- ```Arduino
+  resetRegisters(unsigned long delay_ms=0);
+  ```
+- ```Arduino
+  updateDAC(unsigned long delay_ms=0);
+  ```
+- ```Arduino
+  updateChannels(uint8_t* channels, int num_channels);
+  ```
+- ```Arduino
+  powerUpDown(uint8_t* channels, bool* power_up, int num_channels);
+  powerUpDown(uint8_t channel, bool power_up);
+  ```
+- ```Arduino
+  void setReference(bool internal);
+	void setReference(float Vref);
+  ```
 
 ## Unimplemented features
-All the essential features to use the AD567X devices are implemented by this library. However, a number of functionalities provided by these devices are not yet supported. These include
+All the essential features to use the AD567X devices are implemented by this library. However, some advanced functionalities provided by these devices are not yet supported. These include
 - [ ] Daisy-chaining
 - [ ] Register content readback
 - [ ] LDAC mask registers
 - [ ] Sequential writing to all input/DAC registers
 - [ ] Software reset (not using the Reset pin)
-These functions are deemed not essential for an initial version of the library and may or may not be implemented in the future if the author has a use for them.
+These functions are deemed not essential for an initial version of the library and may or may not be implemented in the future.
