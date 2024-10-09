@@ -100,7 +100,7 @@ The optional argument `verbose` will print error or warning messages (when the e
   ```
 - ```Arduino
   void setReference(bool internal);
-	void setReference(float Vref);
+  void setReference(float Vref);
   ```
 
 ## Unimplemented features
