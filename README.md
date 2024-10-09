@@ -134,6 +134,7 @@ All the essential features to use the AD567X devices are implemented by this lib
 - [ ] LDAC mask registers
 - [ ] Sequential writing to all input/DAC registers
 - [ ] Software reset (not using the Reset pin)
+
 These functions are deemed not essential for an initial version of the library and may or may not be implemented in the future. Contributions to expand the features (such as daisy-chaining support) are welcome.
 
 ## Acknowledgement
