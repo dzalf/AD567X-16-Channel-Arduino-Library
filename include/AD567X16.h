@@ -67,7 +67,7 @@ To-do:
 class AD567X16Class{
 	
 	public:
-	AD567X16Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
+	AD567X16Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
 	virtual void setChannel(uint8_t channel, word value, bool DAC_update=0, bool verbose=0) = 0;
 	virtual void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0) = 0;
 	void resetRegisters(unsigned long delay_ms=0);
@@ -77,7 +77,7 @@ class AD567X16Class{
 	void powerUpDown(uint8_t channel, bool power_up);
 
 	protected:
-		pin_size_t _SS_pin;
+		pin_size_t _CS_pin;
 		pin_size_t _LDAC_pin;
 		pin_size_t _RESET_pin;
 		float _Vref = 2.5;
@@ -97,7 +97,7 @@ class AD567X16Class{
 class AD5674RClass : public AD567X16Class{
 
 	public:
-	AD5674RClass(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
+	AD5674RClass(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
 
 	void setChannel(uint8_t channel, word value, bool DAC_update=0, bool verbose=0) override;
 	void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0) override;
@@ -107,8 +107,8 @@ class AD5674RClass : public AD567X16Class{
 class AD5674Class : public AD5674RClass{
 
 	public:
-	AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
-	AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref);
+	AD5674Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
+	AD5674Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref);
 
 	using AD567X16Class::setReference;
 };
@@ -117,7 +117,7 @@ class AD5674Class : public AD5674RClass{
 class AD5679RClass : public AD567X16Class{
 
 	public:
-	AD5679RClass(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
+	AD5679RClass(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
 
 	void setChannel(uint8_t channel, word value, bool DAC_update=0, bool verbose=0) override;
 	void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0) override;
@@ -127,8 +127,8 @@ class AD5679RClass : public AD567X16Class{
 class AD5679Class : public AD5679RClass{
 
 	public:
-	AD5679Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
-	AD5679Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref);
+	AD5679Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin);
+	AD5679Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref);
 
 	using AD567X16Class::setReference;
 };

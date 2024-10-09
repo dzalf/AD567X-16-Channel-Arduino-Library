@@ -44,12 +44,12 @@ To-do:
 #include <AD567X16.h>
 #include <math.h>
 
-AD567X16Class::AD567X16Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin){
-	_SS_pin = SS_pin;
+AD567X16Class::AD567X16Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin){
+	_CS_pin = CS_pin;
 	_LDAC_pin = LDAC_pin;
 	_RESET_pin = RESET_pin;
 	
-	pinMode(_SS_pin, OUTPUT);
+	pinMode(_CS_pin, OUTPUT);
 	pinMode(_LDAC_pin, OUTPUT);
 	pinMode(_RESET_pin, OUTPUT);
 
@@ -57,22 +57,22 @@ AD567X16Class::AD567X16Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t 
 	SPI.setDataMode(SPI_MODE1);
 	SPI.setBitOrder(MSBFIRST);
 	
-	digitalWrite(_SS_pin, HIGH);
+	digitalWrite(_CS_pin, HIGH);
 	digitalWrite(_LDAC_pin, HIGH);
 	digitalWrite(_RESET_pin, HIGH);
 
 	resetRegisters();
 }
 
-AD5674RClass::AD5674RClass(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(SS_pin, LDAC_pin, RESET_pin) {}
+AD5674RClass::AD5674RClass(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(CS_pin, LDAC_pin, RESET_pin) {}
 
-AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5674RClass(SS_pin, LDAC_pin, RESET_pin) {}
-AD5674Class::AD5674Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5674RClass(SS_pin, LDAC_pin, RESET_pin) {setReference(Vref);}
+AD5674Class::AD5674Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5674RClass(CS_pin, LDAC_pin, RESET_pin) {}
+AD5674Class::AD5674Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5674RClass(CS_pin, LDAC_pin, RESET_pin) {setReference(Vref);}
 
-AD5679RClass::AD5679RClass(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(SS_pin, LDAC_pin, RESET_pin) {}
+AD5679RClass::AD5679RClass(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(CS_pin, LDAC_pin, RESET_pin) {}
 
-AD5679Class::AD5679Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5679RClass(SS_pin, LDAC_pin, RESET_pin) {}
-AD5679Class::AD5679Class(pin_size_t SS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5679RClass(SS_pin, LDAC_pin, RESET_pin) {setReference(Vref);}
+AD5679Class::AD5679Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5679RClass(CS_pin, LDAC_pin, RESET_pin) {}
+AD5679Class::AD5679Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5679RClass(CS_pin, LDAC_pin, RESET_pin) {setReference(Vref);}
 
 void AD567X16Class::pushChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
 
@@ -271,7 +271,7 @@ void AD567X16Class::writeData(byte command, byte address, word data){
 
 	// Start SPI by selecting the slave
 	SPI.begin();
-	digitalWrite(_SS_pin, LOW);
+	digitalWrite(_CS_pin, LOW);
 
 	// Send the command and address (4 bits each)
 	SPI.transfer((command << 4) | address);
@@ -281,6 +281,6 @@ void AD567X16Class::writeData(byte command, byte address, word data){
 	SPI.transfer(lowByte(data));
 
 	// End SPI by deselecting the slave
-	digitalWrite(_SS_pin, HIGH);
+	digitalWrite(_CS_pin, HIGH);
 	SPI.end();
 }
