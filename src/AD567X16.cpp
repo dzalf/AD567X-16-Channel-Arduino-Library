@@ -18,6 +18,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+AD567X16.cpp - Arduino library for controlling the Analog Devices AD567X 16-channel DACs.
+Supported models: - AD5674R
+				  - AD5674
+				  - AD5679R
+				  - AD5679
+Complete datasheet can be found at https://www.analog.com/media/en/technical-documentation/data-sheets/AD5674-5674R-5679-5679R.pdf
+
+Author: Loris Mendolia
+Version: 1.0.0
+Date: 2024-10-09
+
+To-do:
+- Add support for daisy-chaining
+- Add support for readback
+- Add support for LDAC mask register
+- Add support for writing to all input registers
+- Add support for writing to all DAC registers
+- Add support for software reset
 */
 
 #include <Arduino.h>
@@ -265,13 +284,3 @@ void AD567X16Class::writeData(byte command, byte address, word data){
 	digitalWrite(_SS_pin, HIGH);
 	SPI.end();
 }
-
-/*
-To-do:
-- Add support for daisy-chaining
-- Add support for readback
-- Add support for LDAC mask register
-- Add support for writing to all input registers
-- Add support for writing to all DAC registers
-- Add support for software reset
-*/

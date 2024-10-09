@@ -18,6 +18,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+AD567X16.h - Arduino library for controlling the Analog Devices AD567X 16-channel DACs.
+Supported models: - AD5674R
+				  - AD5674
+				  - AD5679R
+				  - AD5679
+Complete datasheet can be found at https://www.analog.com/media/en/technical-documentation/data-sheets/AD5674-5674R-5679-5679R.pdf
+
+Author: Loris Mendolia
+Version: 1.0.0
+Date: 2024-10-09
+
+To-do:
+- Add support for daisy-chaining
+- Add support for readback
+- Add support for LDAC mask register
+- Add support for writing to all input registers
+- Add support for writing to all DAC registers
+- Add support for software reset
 */
 
 #ifndef AD567X16_h
@@ -44,6 +63,7 @@ SOFTWARE.
 #define AD567X16_REF_INTERNAL_MESSAGE 0x0000 // Set internal reference
 #define AD567X16_REF_EXTERNAL_MESSAGE 0x0001 // Set external reference
 
+// Abstract class for all AD567X 16-channel models
 class AD567X16Class{
 	
 	public:
@@ -73,6 +93,7 @@ class AD567X16Class{
 		void writeData(byte command, byte address, word data);
 };
 
+// AD5674R: 16-channel, 12-bit DAC with internal reference
 class AD5674RClass : public AD567X16Class{
 
 	public:
@@ -82,6 +103,7 @@ class AD5674RClass : public AD567X16Class{
 	void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0) override;
 };
 
+// AD5674: 16-channel, 12-bit DAC with external reference
 class AD5674Class : public AD5674RClass{
 
 	public:
@@ -91,6 +113,7 @@ class AD5674Class : public AD5674RClass{
 	using AD567X16Class::setReference;
 };
 
+// AD5679R: 16-channel, 16-bit DAC with internal reference
 class AD5679RClass : public AD567X16Class{
 
 	public:
@@ -100,6 +123,7 @@ class AD5679RClass : public AD567X16Class{
 	void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0) override;
 };
 
+// AD5679: 16-channel, 16-bit DAC with external reference
 class AD5679Class : public AD5679RClass{
 
 	public:
@@ -110,13 +134,3 @@ class AD5679Class : public AD5679RClass{
 };
 
 #endif
-
-/*
-To-do:
-- Add support for daisy-chaining
-- Add support for readback
-- Add support for LDAC mask register
-- Add support for writing to all input registers
-- Add support for writing to all DAC registers
-- Add support for software reset
-*/
