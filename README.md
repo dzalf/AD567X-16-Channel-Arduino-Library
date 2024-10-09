@@ -7,7 +7,7 @@ An [Arduino](http://arduino.cc) library to use the Analog Devices [AD567X](https
 - AD5679: 16-bit resolution with external voltage reference
 - AD5679R: 16-bit resolution
 
-### This library was only tested on the AD5674, use at your own risk on other models.
+### This library was only tested on the AD5674. Compatibility with other models is expected but not fully verified.
 
 Copyright (c) 2024 Loris Mendolia
 
@@ -33,7 +33,7 @@ Dac = new AD5674Class(SS_DAC_PIN, LDAC_PIN, DAC_RESET_PIN, 1.8);
 ```
 where `SS_DAC_PIN`, `LDAC_PIN`, and `DAC_RESET_PIN` are the pin numbers used on the Arduino and 1.8 corresponds to a 1.8 V external reference.
 
-Note that when any library function is called, the SPI Bit Order is set to `MSBFIRST` and the SPI Data Mode is set to `SPI_MODE1`. These are not changed back at the end of the function call, so they must be set before using the SPI bus with another device.
+Note that when any library function is called, the SPI Bit Order is set to `MSBFIRST` and the SPI Data Mode is set to `SPI_MODE1`. These are not changed back at the end of the function call, so, if the SPI bus is shared with other devices, ensure the bit order and data mode are set correctly after interacting with the DAC.
 
 ### Setting a voltage
 The AD567X DACs use a buffered input structure, with separate input and DAC registers. This library provides ways to write to both registers, to directly affect the DAC outputs or to buffer changes first. The `setChannel` function uses the optional argument `DAC_update`, by default set to `False` to determine whether the given value should be written to the DAC registers (when `True`) or to the input registers (when `False`). After writing to the input registers, the `updateDAC` function is used to copy the contents of the input registers to the DAC registers (by pulsing the LDAC pin).
@@ -73,46 +73,59 @@ Dac->updateDAC();
   - AD5679Class
  
 ### DAC operation functions
-- ```Arduino
-  void setChannel(uint8_t channel, word value, bool DAC_update=0, bool verbose=0);
-  void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0);
-  ```
-  Sets the value of the specified channel. `value` can be
-  - a 16-bit `word` (unsigned 16-bit integer, corresponding to an `unsigned int`), in which case the register bits will directly be set according to that value, or
-  - a `float` corresponding to the desired voltage, which will be converted into a `word` according to the value of the reference voltage (internal or external). This function will *fail* if the reference is set to external but the reference voltage has not been specified.
+#### `setChannel`
+```Arduino
+void setChannel(uint8_t channel, word value, bool DAC_update=0, bool verbose=0);
+void setChannel(uint8_t channel, float value, bool DAC_update=0, bool verbose=0);
+```
+Sets the value of the specified channel. `value` can be
+- a 16-bit `word` (unsigned 16-bit integer, corresponding to an `unsigned int`), in which case the register bits will directly be set according to that value, or
+- a `float` corresponding to the desired voltage, which will be converted into a `word` according to the value of the reference voltage (internal or external). This function will *fail* if the reference is set to external but the reference voltage has not been specified.
 For the 12-bit models (AD5674 and AD5674R), the 4 least significant bits will be ignored.
  
 The optional argument `DAC_update` indicates whether the DAC registers should be updated directly, or if the specified value should be put in the input registers (default).
 The optional argument `verbose` will print error or warning messages (when the exact float value cannot be achieved with the DAC resolution) on the SPI bus. This function is disabled by default as it makes the SPI bus very busy, which is undesirable for fast operation.
 
-- ```Arduino
-  resetRegisters(unsigned long delay_ms=0);
-  ```
-  Resets the DAC by pulsing the reset pin. The optional argument `delay_ms` specifies how long the reset pin should be pulsed for, in case the microcontroller frequency is too high.
-  
-- ```Arduino
-  updateDAC(unsigned long delay_ms=0);
-  ```
-  Orders the DAC to copy the contents of all the input registers to the DAC registers, to set the channel voltages according to the previous `setChannel` calls, by pulsing the LDAC pin. The optional argument `delay_ms` specifies how long the LDAC pin should be pulsed for, in case the microcontroller frequency is too high.
-  
-- ```Arduino
-  updateChannels(uint8_t* channels, int num_channels);
-  ```
-  Orders the DAC to copy the contents of the input registers for the channels specified in the `channels` array to the corresponding DAC registers, to set the channel voltages according to the previous `setChannel` calls.
-  
-- ```Arduino
-  powerUpDown(uint8_t* channels, bool* power_up, int num_channels);
-  powerUpDown(uint8_t channel, bool power_up);
-  ```
-  Powers up or down the channel(s) specified in `channel(s)` according to the power state(s) (`true` for on, `false` for off) specified in `power_up`.
-  
-- ```Arduino
-  void setReference(bool internal);
-  void setReference(float Vref);
-  ```
-  _For models with external reference only_
+#### `resetRegisters`
+```Arduino
+resetRegisters(unsigned long delay_ms=0);
+```
+Resets the DAC by pulsing the reset pin. The optional argument `delay_ms` specifies how long the reset pin should be pulsed for, in case the microcontroller frequency is too high.
 
-  Sets the DAC reference. Uses the 2.5 V internal reference if `internal = true`, and the external reference set on the reference pin otherwise. Using the function with the `Vref` argument to specify the reference voltage, or using the internal reference enables the `setChannel` function to work with a floating point value. *If the function is used with `internal = false`, the DAC will use the external reference, but the `setChannel` function will not work with a floating point value*.
+#### `updateDAC`
+```Arduino
+updateDAC(unsigned long delay_ms=0);
+```
+Orders the DAC to copy the contents of all the input registers to the DAC registers, to set the channel voltages according to the previous `setChannel` calls, by pulsing the LDAC pin. The optional argument `delay_ms` specifies how long the LDAC pin should be pulsed for, in case the microcontroller frequency is too high.
+
+#### `updateChannels`
+```Arduino
+updateChannels(uint8_t* channels, int num_channels);
+```
+Orders the DAC to copy the contents of the input registers for the channels specified in the `channels` array to the corresponding DAC registers, to set the channel voltages according to the previous `setChannel` calls.
+
+#### `powerUpDown`
+```Arduino
+powerUpDown(uint8_t* channels, bool* power_up, int num_channels);
+powerUpDown(uint8_t channel, bool power_up);
+```
+Powers up or down the channel(s) specified in `channel(s)` according to the power state(s) (`true` for on, `false` for off) specified in `power_up`.
+
+##### Usage example:
+```Arduino
+// Powers down channels 1 and 7 and powers up channel 8
+uint8_t channels_to_set[3] = {2,9,8};
+bool power_states[3] = {false,true,false};
+Dac->powerUpDown(channels_to_set, power_states, 3);
+```
+
+#### `setReference` (_Models with external reference only_)
+```Arduino
+void setReference(bool internal);
+void setReference(float Vref);
+```
+
+Sets the DAC reference on models with an external reference option (AD5674 and AD5679). Uses the 2.5 V internal reference if `internal = true`, and the external reference set on the reference pin otherwise. Using the function with the `Vref` argument to specify the reference voltage, or using the internal reference enables the `setChannel` function to work with a floating point value. *If the function is used with `internal = false`, the DAC will use the external reference, but the `setChannel` function will not work with a floating point value*.
 
 ## Unimplemented features
 All the essential features to use the AD567X devices are implemented by this library. However, some advanced functionalities provided by these devices are not yet supported. These include
@@ -121,4 +134,7 @@ All the essential features to use the AD567X devices are implemented by this lib
 - [ ] LDAC mask registers
 - [ ] Sequential writing to all input/DAC registers
 - [ ] Software reset (not using the Reset pin)
-These functions are deemed not essential for an initial version of the library and may or may not be implemented in the future.
+These functions are deemed not essential for an initial version of the library and may or may not be implemented in the future. Contributions to expand the features (such as daisy-chaining support) are welcome.
+
+## Acknowledgement
+This library was inspired by the [arduino_library_AD56X4](https://github.com/frejanordsiek/arduino_library_AD56X4) package by [Freja Nordsiek](https://github.com/frejanordsiek).
