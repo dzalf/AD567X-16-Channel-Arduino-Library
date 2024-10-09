@@ -69,7 +69,6 @@ class AD567X16Class{
 		void setReference(float Vref);
 
 		void pushChannel(uint8_t channel, word value, bool DAC_update, bool verbose);
-		void pushChannel(uint8_t channel, float value, bool DAC_update, bool verbose);
 
 		void writeData(byte command, byte address, word data);
 };
