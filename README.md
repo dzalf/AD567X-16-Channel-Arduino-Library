@@ -88,20 +88,31 @@ The optional argument `verbose` will print error or warning messages (when the e
 - ```Arduino
   resetRegisters(unsigned long delay_ms=0);
   ```
+  Resets the DAC by pulsing the reset pin. The optional argument `delay_ms` specifies how long the reset pin should be pulsed for, in case the microcontroller frequency is too high.
+  
 - ```Arduino
   updateDAC(unsigned long delay_ms=0);
   ```
+  Orders the DAC to copy the contents of all the input registers to the DAC registers, to set the channel voltages according to the previous `setChannel` calls, by pulsing the LDAC pin. The optional argument `delay_ms` specifies how long the LDAC pin should be pulsed for, in case the microcontroller frequency is too high.
+  
 - ```Arduino
   updateChannels(uint8_t* channels, int num_channels);
   ```
+  Orders the DAC to copy the contents of the input registers for the channels specified in the `channels` array to the corresponding DAC registers, to set the channel voltages according to the previous `setChannel` calls.
+  
 - ```Arduino
   powerUpDown(uint8_t* channels, bool* power_up, int num_channels);
   powerUpDown(uint8_t channel, bool power_up);
   ```
+  Powers up or down the channel(s) specified in `channel(s)` according to the power state(s) (`true` for on, `false` for off) specified in `power_up`.
+  
 - ```Arduino
   void setReference(bool internal);
   void setReference(float Vref);
   ```
+  _For models with external reference only_
+
+  Sets the DAC reference. Uses the 2.5 V internal reference if `internal = true`, and the external reference set on the reference pin otherwise. Using the function with the `Vref` argument to specify the reference voltage, or using the internal reference enables the `setChannel` function to work with a floating point value. *If the function is used with `internal = false`, the DAC will use the external reference, but the `setChannel` function will not work with a floating point value*.
 
 ## Unimplemented features
 All the essential features to use the AD567X devices are implemented by this library. However, some advanced functionalities provided by these devices are not yet supported. These include
