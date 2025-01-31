@@ -13,6 +13,9 @@ Copyright (c) 2024 Loris Mendolia
 
 This software is distributed under an [MIT License](./LICENSE).
 
+## Example code
+A toy example file, [AD5674_example.cpp](examples/AD5674_example.cpp), which sets half the channels of an AD5674R to increasing voltages between 0 and 1.8V and generates a sawtooth wave on every other channel of an AD5674, is provided.
+
 ## Using the library
 The simplest way to use this library is with [PlatformIO](https://platformio.org/), by adding `https://github.com/LorisMendolia/AD567X-16-Channel-Arduino-Library` to the `lib_deps` variable of your PlatformIO environment (in the `platformio.ini` file).
 
