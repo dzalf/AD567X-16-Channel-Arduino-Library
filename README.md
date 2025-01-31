@@ -29,7 +29,7 @@ For models with an external reference pin (non-R models), the value of the exter
 
 For example, instantiating and initializing the device class for the AD5674 is as simple as
 ```Arduino
-Dac = new AD5674Class(SS_DAC_PIN, LDAC_PIN, DAC_RESET_PIN, 1.8);
+AD5674Class Dac(SS_DAC_PIN, LDAC_PIN, DAC_RESET_PIN, 1.8);
 ```
 where `SS_DAC_PIN`, `LDAC_PIN`, and `DAC_RESET_PIN` are the pin numbers used on the Arduino and 1.8 corresponds to a 1.8 V external reference.
 
@@ -42,12 +42,12 @@ When using the internal reference, or when the external reference is specified f
 
 For example, to set a 1.2 V voltage on the third channel by directly writing to the DAC registers, the function call would be
 ```Arduino
-Dac->setChannel(2, (float)1.2, true);
+Dac.setChannel(2, (float)1.2, true);
 ```
 To set the voltage of the first channel to half the reference by first writing to the input registers then updating the DAC registers, one would use
 ```Arduino
-Dac->setChannel(0, (word)0x7FFF);
-Dac->updateDAC();
+Dac.setChannel(0, (word)0x7FFF);
+Dac.updateDAC();
 ```
 
 ## Library functions
@@ -116,7 +116,7 @@ Powers up or down the channel(s) specified in `channel(s)` according to the powe
 // Powers down channels 1 and 7 and powers up channel 8
 uint8_t channels_to_set[3] = {2,9,8};
 bool power_states[3] = {false,true,false};
-Dac->powerUpDown(channels_to_set, power_states, 3);
+Dac.powerUpDown(channels_to_set, power_states, 3);
 ```
 
 #### `setReference` (_Models with external reference only_)
