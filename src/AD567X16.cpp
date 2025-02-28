@@ -30,6 +30,10 @@ Author: Loris Mendolia
 Version: 1.0.0
 Date: 2024-10-09
 
+Modified by: Daniel Melendrez (dzalf)
+Date: 2025-02-28
+
+
 To-do:
 - Add support for daisy-chaining
 - Add support for readback
@@ -39,24 +43,27 @@ To-do:
 - Add support for software reset
 */
 
-#include <Arduino.h>
-#include <SPI.h>
+// #include <Arduino.h>
+// #include <SPI.h>
 #include <AD567X16.h>
-#include <math.h>
+// #include <math.h>
 
-AD567X16Class::AD567X16Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin){
+AD567X16Class::AD567X16Class(SPIClass &spi, pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin)
+{
+	_spi = &spi;
 	_CS_pin = CS_pin;
 	_LDAC_pin = LDAC_pin;
 	_RESET_pin = RESET_pin;
-	
+
 	pinMode(_CS_pin, OUTPUT);
 	pinMode(_LDAC_pin, OUTPUT);
 	pinMode(_RESET_pin, OUTPUT);
 
 	// SPI settings
-	SPI.setDataMode(SPI_MODE1);
-	SPI.setBitOrder(MSBFIRST);
-	
+	this->setSPIClock();
+	// SPI.setDataMode(SPI_MODE1);
+	// SPI.setBitOrder(MSBFIRST);
+
 	digitalWrite(_CS_pin, HIGH);
 	digitalWrite(_LDAC_pin, HIGH);
 	digitalWrite(_RESET_pin, HIGH);
@@ -64,21 +71,36 @@ AD567X16Class::AD567X16Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t 
 	resetRegisters();
 }
 
+AD567X16Class::AD567X16Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(SPI, CS_pin, LDAC_pin, RESET_pin) {}
+
+//* AD5674R: 16-channel, 12-bit DAC with internal reference
+AD5674RClass::AD5674RClass(SPIClass &spi, pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(SPI, CS_pin, LDAC_pin, RESET_pin) {}
 AD5674RClass::AD5674RClass(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(CS_pin, LDAC_pin, RESET_pin) {}
 
+//* AD5674: 16-channel, 12-bit DAC with external reference
+AD5674Class::AD5674Class(SPIClass &spi, pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5674RClass(SPI, CS_pin, LDAC_pin, RESET_pin) {}
 AD5674Class::AD5674Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5674RClass(CS_pin, LDAC_pin, RESET_pin) {}
-AD5674Class::AD5674Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5674RClass(CS_pin, LDAC_pin, RESET_pin) {setReference(Vref);}
+AD5674Class::AD5674Class(SPIClass &spi, pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5674RClass(SPI, CS_pin, LDAC_pin, RESET_pin) { setReference(Vref); }
+AD5674Class::AD5674Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5674RClass(CS_pin, LDAC_pin, RESET_pin) { setReference(Vref); }
 
+//* AD5679R: 16-channel, 16-bit DAC with internal reference
+AD5679RClass::AD5679RClass(SPIClass &spi, pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(SPI, CS_pin, LDAC_pin, RESET_pin) {}
 AD5679RClass::AD5679RClass(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD567X16Class(CS_pin, LDAC_pin, RESET_pin) {}
 
+//* AD5679: 16-channel, 16-bit DAC with external reference
+AD5679Class::AD5679Class(SPIClass &spi, pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5679RClass(SPI, CS_pin, LDAC_pin, RESET_pin) {}
 AD5679Class::AD5679Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin) : AD5679RClass(CS_pin, LDAC_pin, RESET_pin) {}
-AD5679Class::AD5679Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5679RClass(CS_pin, LDAC_pin, RESET_pin) {setReference(Vref);}
+AD5679Class::AD5679Class(SPIClass &spi, pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5679RClass(SPI, CS_pin, LDAC_pin, RESET_pin) { setReference(Vref); }
+AD5679Class::AD5679Class(pin_size_t CS_pin, pin_size_t LDAC_pin, pin_size_t RESET_pin, float Vref) : AD5679RClass(CS_pin, LDAC_pin, RESET_pin) { setReference(Vref); }
 
-void AD567X16Class::pushChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
+void AD567X16Class::pushChannel(uint8_t channel, word value, bool DAC_update, bool verbose)
+{
 
 	// Check if the channel is within the valid range
-	if(channel < 0 || channel > 15){
-		if(verbose){
+	if (channel < 0 || channel > 15)
+	{
+		if (verbose)
+		{
 			Serial.println("Error: Channel out of range");
 		}
 		return;
@@ -86,77 +108,100 @@ void AD567X16Class::pushChannel(uint8_t channel, word value, bool DAC_update, bo
 
 	byte command;
 	// Select the desired update mode
-	if(DAC_update){
+	if (DAC_update)
+	{
 		command = AD567X16_CMD_WRITE_DAC_REG;
 	}
-	else{
+	else
+	{
 		command = AD567X16_CMD_WRITE_INPUT_REG;
 	}
 
 	writeData(command, channel, value);
 }
 
-void AD5674RClass::setChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
+void AD5674RClass::setChannel(uint8_t channel, word value, bool DAC_update, bool verbose)
+{
 
 	// If the value is greater than 12 bits, warn the user about data loss
-	if(verbose && !(value & 0xF000)){
+	if (verbose && !(value & 0xF000))
+	{
 		Serial.println("Warning: Data loss, value is greater than 12 bits");
 	}
 
 	// Send the 12-bit data to the DAC
-	pushChannel(channel, value<<4, DAC_update, verbose);
+	pushChannel(channel, value << 4, DAC_update, verbose);
 }
 
-void AD5679RClass::setChannel(uint8_t channel, word value, bool DAC_update, bool verbose){
+void AD5679RClass::setChannel(uint8_t channel, word value, bool DAC_update, bool verbose)
+{
 
 	// Send the 16-bit data to the DAC
 	pushChannel(channel, value, DAC_update, verbose);
 }
 
-void AD5674RClass::setChannel(uint8_t channel, float value, bool DAC_update, bool verbose){
+void AD5674RClass::setChannel(uint8_t channel, float value, bool DAC_update, bool verbose)
+{
 
-	if(isnan(_Vref)){
-		if(verbose){
+	if (isnan(_Vref))
+	{
+		if (verbose)
+		{
 			Serial.println("Error: Reference voltage not set");
 		}
 		return;
 	}
 
-	if(value < 0 || value > _Vref){
-		if(verbose){
+	if (value < 0 || value > _Vref)
+	{
+		if (verbose)
+		{
 			Serial.println("Error: Value out of range");
 		}
 		return;
 	}
 
-	setChannel(channel, static_cast<word>(value/_Vref * 4095), DAC_update, verbose);
+	setChannel(channel, static_cast<word>(value / _Vref * 4095), DAC_update, verbose);
 }
 
-void AD5679RClass::setChannel(uint8_t channel, float value, bool DAC_update, bool verbose){
+void AD567X16Class::setSPIClock(uint32_t clock)
+{
+	_spiClk = clock;
+}
 
-	if(isnan(_Vref)){
-		if(verbose){
+void AD5679RClass::setChannel(uint8_t channel, float value, bool DAC_update, bool verbose)
+{
+
+	if (isnan(_Vref))
+	{
+		if (verbose)
+		{
 			Serial.println("Error: Reference voltage not set");
 		}
 		return;
 	}
 
-	if(value < 0 || value > _Vref){
-		if(verbose){
+	if (value < 0 || value > _Vref)
+	{
+		if (verbose)
+		{
 			Serial.println("Error: Value out of range");
 		}
 		return;
 	}
 
-	setChannel(channel, static_cast<word>(value/_Vref * 65535), DAC_update, verbose);
+	setChannel(channel, static_cast<word>(value / _Vref * 65535), DAC_update, verbose);
 }
 
-void AD567X16Class::updateChannels(uint8_t* channels, int num_channels){
+void AD567X16Class::updateChannels(uint8_t *channels, int num_channels)
+{
 
 	word data = 0;
-	for(int i = 0; i < num_channels; i++){
+	for (int i = 0; i < num_channels; i++)
+	{
 		// Check if the channel is within the valid range
-		if(channels[i] < 0 || channels[i] > 15){
+		if (channels[i] < 0 || channels[i] > 15)
+		{
 			Serial.println("Error: Channel out of range");
 			return;
 		}
@@ -168,9 +213,11 @@ void AD567X16Class::updateChannels(uint8_t* channels, int num_channels){
 	writeData(AD567X16_CMD_UPDATE_DAC_REG, 0x00, data);
 }
 
-void AD567X16Class::powerUpDown(uint8_t channel, bool power_up){
+void AD567X16Class::powerUpDown(uint8_t channel, bool power_up)
+{
 	// Check if the channel is within the valid range
-	if(channel < 0 || channel > 15){
+	if (channel < 0 || channel > 15)
+	{
 		Serial.println("Error: Channel out of range");
 		return;
 	}
@@ -181,106 +228,127 @@ void AD567X16Class::powerUpDown(uint8_t channel, bool power_up){
 	powerUpDown(channels, power_ups, 1);
 }
 
-void AD567X16Class::powerUpDown(uint8_t* channels, bool* power_up, int num_channels){
+void AD567X16Class::powerUpDown(uint8_t *channels, bool *power_up, int num_channels)
+{
 	// Create flags to check if the status registers have been updated
 	bool update_0 = false;
 	bool update_1 = false;
 
-	for(int i = 0; i < num_channels; i++){
+	for (int i = 0; i < num_channels; i++)
+	{
 		int channel = channels[i];
 		// Check if the channel is within the valid range
-		if(channel < 0 || channel > 15){
+		if (channel < 0 || channel > 15)
+		{
 			Serial.println("Error: Channel out of range");
 			return;
 		}
 		// Check if the channel is in the first or second batch of 8 channels
-		if(channel > 7){
+		if (channel > 7)
+		{
 			update_1 = true;
 			word power_status = _DAC_status_1;
 			channel %= 8; // Get the channel number within the second batch
 			// Set or clear the corresponding bit in the status register
-			if(!power_up[i]){
-				power_status |= (1 << 2*channel);
+			if (!power_up[i])
+			{
+				power_status |= (1 << 2 * channel);
 			}
-			else{
-				power_status &= ~(1 << 2*channel);
+			else
+			{
+				power_status &= ~(1 << 2 * channel);
 			}
 			_DAC_status_1 = power_status; // Update the status register
 		}
-		else{
+		else
+		{
 			update_0 = true;
 			word power_status = _DAC_status_0;
 			// Set or clear the corresponding bit in the status register
-			if(!power_up[i]){
-				power_status |= (1 << 2*channel);
+			if (!power_up[i])
+			{
+				power_status |= (1 << 2 * channel);
 			}
-			else{
-				power_status &= ~(1 << 2*channel);
+			else
+			{
+				power_status &= ~(1 << 2 * channel);
 			}
 			_DAC_status_0 = power_status; // Update the status register
 		}
-		
 	}
 
 	// If the status registers have been updated, send the new data to the DAC
-	if(update_0){
+	if (update_0)
+	{
 		writeData(AD567X16_CMD_POWER_UPDOWN, AD567X16_POWER_BATCH_0, _DAC_status_0);
 	}
-	if(update_1){
+	if (update_1)
+	{
 		writeData(AD567X16_CMD_POWER_UPDOWN, AD567X16_POWER_BATCH_1, _DAC_status_1);
 	}
 }
 
-void AD567X16Class::resetRegisters(unsigned long delay_ms){
+void AD567X16Class::resetRegisters(unsigned long delay_ms)
+{
 	// Pulse the RESET pin
 	digitalWrite(_RESET_pin, LOW);
-	if(delay_ms){
+	if (delay_ms)
+	{
 		delay(delay_ms);
 	}
 	digitalWrite(_RESET_pin, HIGH);
 }
 
-void AD567X16Class::updateDAC(unsigned long delay_ms){
+void AD567X16Class::updateDAC(unsigned long delay_ms)
+{
 	// Pulse the LDAC pin
 	digitalWrite(_LDAC_pin, LOW);
-	if(delay_ms){
+	if (delay_ms)
+	{
 		delay(delay_ms);
 	}
 	digitalWrite(_LDAC_pin, HIGH);
 }
 
-void AD567X16Class::setReference(bool internal){
+void AD567X16Class::setReference(bool internal)
+{
 	// Set the reference voltage to internal or external
-	if(internal){
+	if (internal)
+	{
 		writeData(AD567X16_CMD_REF_SETUP, 0x00, AD567X16_REF_INTERNAL_MESSAGE);
 		_Vref = 2.5;
 	}
-	else{
+	else
+	{
 		writeData(AD567X16_CMD_REF_SETUP, 0x00, AD567X16_REF_EXTERNAL_MESSAGE);
 		_Vref = NAN;
 	}
 }
 
-void AD567X16Class::setReference(float Vref){
+void AD567X16Class::setReference(float Vref)
+{
 	// Set the reference voltage to external and save the value
 	writeData(AD567X16_CMD_REF_SETUP, 0x00, AD567X16_REF_EXTERNAL_MESSAGE);
 	_Vref = Vref;
 }
 
-void AD567X16Class::writeData(byte command, byte address, word data){
+void AD567X16Class::writeData(byte command, byte address, word data)
+{
 
 	// Start SPI by selecting the slave
-	SPI.begin();
+	_spi->beginTransaction(SPISettings(_spiClk, MSBFIRST, SPI_MODE1));
+
 	digitalWrite(_CS_pin, LOW);
 
-	// Send the command and address (4 bits each)
-	SPI.transfer((command << 4) | address);
+	// Combine command and address into one byte and send
+	_spi->transfer((command << 4) | (address & 0x0F));
 
-	// Send the data (16 bits)
-	SPI.transfer(highByte(data));
-	SPI.transfer(lowByte(data));
+	// Send the data (16 bits) in two transfers
+	_spi->transfer16(data);
 
 	// End SPI by deselecting the slave
 	digitalWrite(_CS_pin, HIGH);
-	SPI.end();
+
+	// End SPI transaction
+	_spi->endTransaction();
 }
